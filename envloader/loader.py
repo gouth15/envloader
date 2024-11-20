@@ -3,29 +3,50 @@ from typing import Dict
 
 
 class EnvLoader:
-    """ This is the class for loading and parsing the environment values in the .env file.
     """
-    
+    A class to load and parse environment variables from a `.env` file.
+    """
+
     def __init__(self, filename: str = ".env") -> None:
-        """Initializes the .env file.
+        """
+        Initialize the EnvLoader instance by locating and loading the `.env` file.
 
         Args:
-            filename (str, optional): The environment file of the project. Defaults to ".env".
+            filename (str, optional): The name of the `.env` file. Defaults to ".env".
         """
         self._filename: Path = self._find_env_file(filename)
         self.env_values: Dict[str, str] = self.load_env()
+        self.__dict__.update(self.env_values)
 
-    def _find_env_file(self, filename: str) -> Path:
-        """Find the .env file in the current directory.
+    def __getattr__(self, name: str):
+        """
+        Dynamically retrieve an environment variable's value as an attribute.
 
         Args:
-            filename (str): The name of the environment file.
+            name (str): The name of the environment variable.
 
         Raises:
-            FileNotFoundError: If the .env file is not found.
+            AttributeError: If the environment variable is not found.
 
         Returns:
-            Path: Path to the .env file.
+            str: The value of the environment variable.
+        """
+        if name in self.env_values:
+            return self.env_values[name]
+        raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
+
+    def _find_env_file(self, filename: str) -> Path:
+        """
+        Locate the `.env` file in the current directory or subdirectories.
+
+        Args:
+            filename (str): The name of the `.env` file.
+
+        Raises:
+            FileNotFoundError: If the `.env` file cannot be found.
+
+        Returns:
+            Path: The path to the located `.env` file.
         """
         env_file = list(Path(".").rglob(f"{filename}*"))
         if not env_file:
@@ -33,13 +54,14 @@ class EnvLoader:
         return env_file[0]
 
     def _load_file(self) -> list[str]:
-        """Reads the content from the environment file.
+        """
+        Read the contents of the `.env` file.
 
         Raises:
-            Exception: When an uncaught error occurs.
+            Exception: If an error occurs while reading the file.
 
         Returns:
-            list[str]: Returns the list of lines from the file.
+            list[str]: A list of lines from the `.env` file.
         """
         try:
             with open(self._filename, "r") as file:
@@ -48,16 +70,17 @@ class EnvLoader:
             raise Exception(f"Error reading file {self._filename}: {error}")
 
     def _extract_key_value(self, line: str) -> Dict[str, str]:
-        """Extracts the key and value from the line.
+        """
+        Parse a line from the `.env` file to extract a key-value pair.
 
         Args:
-            line (str): The content line from the environment file.
+            line (str): A line of text from the `.env` file.
 
         Raises:
-            ValueError: When the line format is incorrect.
+            ValueError: If the line is not in a valid key-value format.
 
         Returns:
-            dict[str, str]: Returns the key-value pair from the line.
+            dict[str, str]: A dictionary containing a single key-value pair.
         """
         line = line.strip()
         if not line or line.startswith("#"):  # Ignore empty lines or comments
@@ -72,13 +95,14 @@ class EnvLoader:
             raise ValueError(f"Error parsing line '{line}': {error}")
 
     def load_env(self) -> Dict[str, str]:
-        """Loads environment variables from the file.
+        """
+        Load all environment variables from the `.env` file into a dictionary.
 
         Raises:
-            Exception: If there is an error loading the file.
+            Exception: If an error occurs during loading.
 
         Returns:
-            dict[str, str]: A dictionary of environment variables.
+            dict[str, str]: A dictionary of key-value pairs from the `.env` file.
         """
         try:
             file_contents = self._load_file()
@@ -91,16 +115,17 @@ class EnvLoader:
             raise Exception(f"Error loading .env file: {error}")
 
     def get_value(self, key: str) -> str:
-        """Returns the value of the given environment variable.
+        """
+        Retrieve the value of a specific environment variable by key.
 
         Args:
-            key (str): The key of the environment variable.
+            key (str): The name of the environment variable.
 
         Raises:
-            KeyError: If the key is not found.
+            KeyError: If the specified key is not found in the environment variables.
 
         Returns:
-            str: The value of the environment variable.
+            str: The value associated with the specified key.
         """
         value = self.env_values.get(key, "")
         if value is None:
