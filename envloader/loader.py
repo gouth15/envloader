@@ -1,10 +1,14 @@
+import itertools
 from pathlib import Path
-from typing import Dict
-
+from typing import Any, Dict
 
 class EnvLoader:
     """
     A class to load and parse environment variables from a `.env` file.
+
+    The class locates a `.env` file in the current directory or its subdirectories,
+    loads its content, and makes the variables accessible both as attributes and through
+    a dictionary-like interface.
     """
 
     def __init__(self, filename: str = ".env") -> None:
@@ -17,8 +21,16 @@ class EnvLoader:
         self._filename: Path = self._find_env_file(filename)
         self.env_values: Dict[str, str] = self.load_env()
         self.__dict__.update(self.env_values)
+        
+        # Set environment variables as attributes
+        for key, value in self.env_values.items():
+            self.__setattr__(key, value)
 
-    def __getattr__(self, name: str):
+    def __setattr__(self, name: str, value: Any) -> None:
+        """Set an attribute value."""
+        super().__setattr__(name, value)
+
+    def __getattr__(self, name: str) -> str:
         """
         Dynamically retrieve an environment variable's value as an attribute.
 
@@ -34,6 +46,10 @@ class EnvLoader:
         if name in self.env_values:
             return self.env_values[name]
         raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
+    
+    def __dir__(self):
+        """Return the list of attributes (including environment variables)."""
+        return super().__dir__()
 
     def _find_env_file(self, filename: str) -> Path:
         """
@@ -90,7 +106,7 @@ class EnvLoader:
             key, _, value = line.partition("=")
             if not key or not value:
                 raise ValueError(f"Invalid line: {line}")
-            return {key.strip(): value.strip()}
+            return {key.strip(): value.strip().split()[0]}
         except ValueError as error:
             raise ValueError(f"Error parsing line '{line}': {error}")
 
@@ -127,7 +143,7 @@ class EnvLoader:
         Returns:
             str: The value associated with the specified key.
         """
-        value = self.env_values.get(key, "")
+        value = self.env_values.get(key)
         if value is None:
             raise KeyError(f"Environment variable '{key}' not found.")
         return value

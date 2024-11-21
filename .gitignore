@@ -163,4 +163,4 @@ cython_debug/
 
 # localfiles
 
-.env.dev
+*/*.env
