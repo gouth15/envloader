@@ -1,10 +1,7 @@
-from pickletools import pyset
 from envloader import EnvLoader
 import pytest
 import shutil
 from pathlib import Path
-
-import envloader
 
 
 @pytest.fixture(scope = "module")
