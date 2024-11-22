@@ -5,7 +5,7 @@ with open("README.md", "r", encoding = "utf-8") as file:
 
 setup(
     name= "envloader",
-    version = "0.1.4",
+    version = "0.1.5",
     author = "Goutham",
     author_email = "gouthams.330@gmail.com",
     description = "A simple package to load the env variables from the environment file",
