@@ -105,7 +105,7 @@ class EnvLoader:
             key, _, value = line.partition("=")
             if not key or not value:
                 raise ValueError(f"Invalid line: {line}")
-            return {key.strip().split()[0]: value.strip().split()[0]}
+            return {key.split()[0]: value.split()[0]}
         except ValueError as error:
             raise ValueError(f"Error parsing line '{line}': {error}")
 
